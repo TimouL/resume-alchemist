@@ -1,0 +1,88 @@
+/* A4 打印专用样式 */
+
+@page {
+  size: A4;
+  margin: 0;
+}
+
+@media print {
+  /* 强制打印背景色和图片 */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  /* 隐藏所有非打印元素 */
+  .no-print,
+  .no-print * {
+    display: none !important;
+  }
+
+  /* 隐藏页面其他元素 */
+  body > *:not(.print-container) {
+    display: none !important;
+  }
+
+  /* 简历容器 */
+  .resume-a4 {
+    width: 210mm !important;
+    min-height: 297mm !important;
+    max-height: 297mm !important;
+    padding: 20mm !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    page-break-after: always;
+    overflow: hidden;
+  }
+
+  /* 防止内容被切断 */
+  .resume-section {
+    page-break-inside: avoid;
+  }
+
+  /* 链接样式 */
+  a {
+    text-decoration: none !important;
+  }
+
+  /* 字体优化 */
+  body {
+    font-size: 10pt;
+    line-height: 1.4;
+  }
+}
+
+/* A4 容器基础样式 */
+.resume-a4 {
+  width: 210mm;
+  min-height: 297mm;
+  padding: 20mm;
+  box-sizing: border-box;
+  background: white;
+}
+
+/* 模板字体类 */
+.font-inter {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.font-merriweather {
+  font-family: 'Merriweather', 'Georgia', serif;
+}
+
+.font-jetbrains {
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+}
+
+.font-roboto {
+  font-family: 'Roboto', 'Helvetica Neue', sans-serif;
+}
+
+.font-lato {
+  font-family: 'Lato', 'Helvetica Neue', sans-serif;
+}
+
+.font-source-sans {
+  font-family: 'Source Sans 3', 'Source Sans Pro', sans-serif;
+}
