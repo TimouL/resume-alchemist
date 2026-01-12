@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Upload, FileText, Wand2, Loader2 } from 'lucide-react';
+import { Upload, FileText, Wand2, Loader2, FileUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 interface ResumeInputProps {
   onSubmit: (content: string) => void;
@@ -13,6 +14,7 @@ interface ResumeInputProps {
 export function ResumeInput({ onSubmit, isLoading }: ResumeInputProps) {
   const [content, setContent] = useState('');
   const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = () => {
     if (content.trim()) {
@@ -29,14 +31,41 @@ export function ResumeInput({ onSubmit, isLoading }: ResumeInputProps) {
     setIsDragging(false);
   };
 
+  const isValidFile = (file: File) => {
+    const validTypes = ['text/plain', 'text/markdown', 'text/x-markdown'];
+    const validExtensions = ['.txt', '.md', '.markdown'];
+    const extension = file.name.toLowerCase().slice(file.name.lastIndexOf('.'));
+    return validTypes.includes(file.type) || validExtensions.includes(extension);
+  };
+
+  const handleFileRead = async (file: File) => {
+    if (!isValidFile(file)) {
+      toast.error('请上传 .md 或 .txt 格式的文件');
+      return;
+    }
+    const text = await file.text();
+    setContent(text);
+    toast.success(`已导入: ${file.name}`);
+  };
+
   const handleDrop = async (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
     
     const file = e.dataTransfer.files[0];
-    if (file && file.type === 'text/plain') {
-      const text = await file.text();
-      setContent(text);
+    if (file) {
+      await handleFileRead(file);
+    }
+  };
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      await handleFileRead(file);
+    }
+    // 重置 input 以便可以再次选择同一文件
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   };
 
@@ -85,16 +114,37 @@ export function ResumeInput({ onSubmit, isLoading }: ResumeInputProps) {
               <div className="p-4 rounded-full bg-muted/50">
                 <Upload className="w-6 h-6" />
               </div>
-              <span className="text-sm">拖拽文件或粘贴简历内容</span>
+              <span className="text-sm">拖拽 Markdown/文本文件 或粘贴简历内容</span>
             </div>
           </div>
         )}
       </div>
 
+      {/* 隐藏的文件输入 */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".md,.markdown,.txt,text/plain,text/markdown"
+        onChange={handleFileSelect}
+        className="hidden"
+      />
+
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <FileText className="w-4 h-4" />
-          <span>{content.length} 字</span>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <FileText className="w-4 h-4" />
+            <span>{content.length} 字</span>
+          </div>
+          
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => fileInputRef.current?.click()}
+            className="gap-2"
+          >
+            <FileUp className="w-4 h-4" />
+            导入文件
+          </Button>
         </div>
 
         <Button
