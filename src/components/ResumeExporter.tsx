@@ -82,11 +82,11 @@ export function ResumeExporter({ resumeContent, polishedContent, onBack }: Resum
         </TabsList>
 
         <TabsContent value="templates">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-6 items-start">
             {/* 左侧：模板选择 */}
-            <div className="space-y-4">
+            <div className="space-y-3">
               <h3 className="font-medium text-muted-foreground">选择风格</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-1 gap-4">
+              <div className="space-y-2">
                 {RESUME_TEMPLATES.map((template) => (
                   <ResumeTemplatePreview
                     key={template.id}
@@ -100,10 +100,16 @@ export function ResumeExporter({ resumeContent, polishedContent, onBack }: Resum
             </div>
 
             {/* 右侧：预览 */}
-            <div className="space-y-4">
+            <div className="space-y-4 flex flex-col">
               <h3 className="font-medium text-muted-foreground">效果预览</h3>
-              <div className="glass-card p-4 overflow-auto max-h-[80vh]">
-                <div className="transform scale-[0.45] origin-top-left" style={{ width: '222%' }}>
+              <div className="glass-card p-6 overflow-auto max-h-[80vh] flex items-start justify-center">
+                <div 
+                  className="transform origin-top" 
+                  style={{ 
+                    transform: 'scale(0.55)',
+                    transformOrigin: 'top center'
+                  }}
+                >
                   <ResumeDocument
                     ref={resumeRef}
                     template={selectedTemplate}
