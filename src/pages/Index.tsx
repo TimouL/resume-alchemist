@@ -121,11 +121,11 @@ export default function Index() {
             
             {/* GitHub 链接 */}
             <a
-              href="https://github.com/your-username/resume-alchemy"
+              href="https://github.com/Anarkh-Lee/resume-alchemist"
               target="_blank"
               rel="noopener noreferrer"
               className="p-2 rounded-lg hover:bg-muted transition-colors"
-              title="在 GitHub 上 Star 我们"
+              title="在 GitHub 上 Star 我"
             >
               <Github className="w-5 h-5 text-muted-foreground hover:text-foreground transition-colors" />
             </a>
