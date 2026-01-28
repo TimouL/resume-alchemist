@@ -257,11 +257,13 @@ serve(async (req) => {
     }
 
     const { type, content, industry, jd, style } = await req.json() as RequestBody;
-    const SILICONFLOW_API_KEY = Deno.env.get('SILICONFLOW_API_KEY');
-    const SILICONFLOW_MODEL = Deno.env.get('SILICONFLOW_MODEL') || 'Qwen/Qwen3-8B';
-    
-    if (!SILICONFLOW_API_KEY) {
-      throw new Error('SILICONFLOW_API_KEY is not configured');
+    // 支持新旧两种环境变量命名，优先使用 OPENAI_* 格式
+    const API_KEY = Deno.env.get('OPENAI_API_KEY') || Deno.env.get('SILICONFLOW_API_KEY');
+    const API_BASE = Deno.env.get('OPENAI_API_BASE') || 'https://api.siliconflow.cn/v1/chat/completions';
+    const MODEL = Deno.env.get('OPENAI_MODEL') || Deno.env.get('SILICONFLOW_MODEL') || 'Qwen/Qwen3-8B';
+
+    if (!API_KEY) {
+      throw new Error('OPENAI_API_KEY is not configured');
     }
 
     const config = getConfig(industry);
@@ -362,15 +364,15 @@ ${styleInstruction}
       userPrompt = `职位描述：\n${jd}\n\n简历内容：\n${content}`;
     }
 
-    // 使用硅基流动 API
-    const response = await fetch('https://api.siliconflow.cn/v1/chat/completions', {
+    // 调用 AI API
+    const response = await fetch(API_BASE, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${SILICONFLOW_API_KEY}`,
+        'Authorization': `Bearer ${API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: SILICONFLOW_MODEL,
+        model: MODEL,
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }

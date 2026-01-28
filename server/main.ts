@@ -33,12 +33,13 @@ async function handleResumeAIStream(req: Request): Promise<Response> {
 }
 
 async function handleRequest(req: Request, endpoint: string): Promise<Response> {
-  // 加载环境变量
-  const SILICONFLOW_API_KEY = Deno.env.get("SILICONFLOW_API_KEY");
-  const SILICONFLOW_MODEL = Deno.env.get("SILICONFLOW_MODEL") || "Qwen/Qwen3-8B";
+  // 加载环境变量（支持新旧两种命名，优先使用 OPENAI_* 格式）
+  const API_KEY = Deno.env.get("OPENAI_API_KEY") || Deno.env.get("SILICONFLOW_API_KEY");
+  const API_BASE = Deno.env.get("OPENAI_API_BASE") || "https://api.siliconflow.cn/v1/chat/completions";
+  const MODEL = Deno.env.get("OPENAI_MODEL") || Deno.env.get("SILICONFLOW_MODEL") || "Qwen/Qwen3-8B";
 
-  if (!SILICONFLOW_API_KEY) {
-    return new Response(JSON.stringify({ error: "SILICONFLOW_API_KEY is not configured" }), {
+  if (!API_KEY) {
+    return new Response(JSON.stringify({ error: "OPENAI_API_KEY is not configured" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
@@ -78,14 +79,14 @@ async function handleRequest(req: Request, endpoint: string): Promise<Response> 
     }
 
     // 调用 AI API
-    const response = await fetch("https://api.siliconflow.cn/v1/chat/completions", {
+    const response = await fetch(API_BASE, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${SILICONFLOW_API_KEY}`,
+        Authorization: `Bearer ${API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: SILICONFLOW_MODEL,
+        model: MODEL,
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },

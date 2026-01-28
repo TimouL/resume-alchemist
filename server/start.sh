@@ -22,9 +22,10 @@ else
   exit 1
 fi
 
-# 检查必要配置
-if [ -z "$SILICONFLOW_API_KEY" ] || [ "$SILICONFLOW_API_KEY" = "your-api-key-here" ]; then
-  echo "❌ 错误: 请在 .env.server 中配置 SILICONFLOW_API_KEY"
+# 检查必要配置（支持新旧两种命名）
+API_KEY="${OPENAI_API_KEY:-$SILICONFLOW_API_KEY}"
+if [ -z "$API_KEY" ] || [ "$API_KEY" = "your-api-key-here" ]; then
+  echo "❌ 错误: 请在 .env.server 中配置 OPENAI_API_KEY"
   exit 1
 fi
 
@@ -38,7 +39,8 @@ fi
 
 echo "🚀 启动服务器..."
 echo "   端口: ${PORT:-8000}"
-echo "   模型: ${SILICONFLOW_MODEL:-Qwen/Qwen3-8B}"
+echo "   端点: ${OPENAI_API_BASE:-https://api.siliconflow.cn/v1/chat/completions}"
+echo "   模型: ${OPENAI_MODEL:-${SILICONFLOW_MODEL:-Qwen/Qwen3-8B}}"
 echo ""
 
 # 启动 Deno 服务器

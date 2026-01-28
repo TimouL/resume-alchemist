@@ -152,10 +152,17 @@ docker run -d \
 
 | 变量名 | 必填 | 默认值 | 说明 |
 |--------|------|--------|------|
-| `SILICONFLOW_API_KEY` | 是 | - | 硅基流动 API 密钥 |
-| `SILICONFLOW_MODEL` | 否 | `Qwen/Qwen3-8B` | AI 模型名称 |
+| `OPENAI_API_KEY` | 是 | - | API 密钥（支持 OpenAI 兼容接口） |
+| `OPENAI_API_BASE` | 否 | 硅基流动 | API 端点 URL |
+| `OPENAI_MODEL` | 否 | `Qwen/Qwen3-8B` | AI 模型名称 |
 | `DATABASE_TYPE` | 否 | `sqlite` | 数据库类型 |
 | `PORT` | 否 | `8000` | 服务端口 |
+
+**支持的 AI 服务端点**：
+- 硅基流动: `https://api.siliconflow.cn/v1/chat/completions`
+- OpenAI: `https://api.openai.com/v1/chat/completions`
+- Ollama: `http://localhost:11434/v1/chat/completions`
+- 其他 OpenAI 兼容服务
 
 #### 数据持久化
 
@@ -333,10 +340,17 @@ docker run -d \
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `SILICONFLOW_API_KEY` | Yes | - | SiliconFlow API key |
-| `SILICONFLOW_MODEL` | No | `Qwen/Qwen3-8B` | AI model name |
+| `OPENAI_API_KEY` | Yes | - | API key (OpenAI-compatible) |
+| `OPENAI_API_BASE` | No | SiliconFlow | API endpoint URL |
+| `OPENAI_MODEL` | No | `Qwen/Qwen3-8B` | AI model name |
 | `DATABASE_TYPE` | No | `sqlite` | Database type |
 | `PORT` | No | `8000` | Server port |
+
+**Supported AI Endpoints**:
+- SiliconFlow: `https://api.siliconflow.cn/v1/chat/completions`
+- OpenAI: `https://api.openai.com/v1/chat/completions`
+- Ollama: `http://localhost:11434/v1/chat/completions`
+- Other OpenAI-compatible services
 
 #### Data Persistence
 
