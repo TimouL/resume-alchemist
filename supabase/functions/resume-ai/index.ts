@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { createDatabase, type IDatabase } from "../_shared/database/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -17,59 +17,14 @@ function isRateLimitEnabled(): boolean {
   return enabled === 'true';
 }
 
-// 获取当前分钟窗口标识
-function getCurrentMinuteWindow(): string {
-  const now = new Date();
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}-${String(now.getHours()).padStart(2, '0')}-${String(now.getMinutes()).padStart(2, '0')}`;
-}
+// 数据库实例（延迟初始化）
+let db: IDatabase | null = null;
 
-// 检查并更新速率限制
-async function checkRateLimit(supabase: any, ipAddress: string): Promise<{ allowed: boolean; remaining: number }> {
-  const minuteWindow = getCurrentMinuteWindow();
-  
-  // 尝试插入或更新速率限制记录
-  const { data: existing, error: selectError } = await supabase
-    .from('rate_limits')
-    .select('request_count')
-    .eq('ip_address', ipAddress)
-    .eq('endpoint', RATE_LIMIT_ENDPOINT)
-    .eq('minute_window', minuteWindow)
-    .single();
-
-  if (selectError && selectError.code !== 'PGRST116') {
-    console.error('Rate limit check error:', selectError);
-    // 出错时允许请求通过，避免误杀
-    return { allowed: true, remaining: RATE_LIMIT_MAX_REQUESTS };
+function getDatabase(): IDatabase {
+  if (!db) {
+    db = createDatabase();
   }
-
-  if (existing) {
-    // 记录已存在，检查是否超限
-    if (existing.request_count >= RATE_LIMIT_MAX_REQUESTS) {
-      return { allowed: false, remaining: 0 };
-    }
-    
-    // 更新计数
-    await supabase
-      .from('rate_limits')
-      .update({ request_count: existing.request_count + 1 })
-      .eq('ip_address', ipAddress)
-      .eq('endpoint', RATE_LIMIT_ENDPOINT)
-      .eq('minute_window', minuteWindow);
-    
-    return { allowed: true, remaining: RATE_LIMIT_MAX_REQUESTS - existing.request_count - 1 };
-  } else {
-    // 新记录
-    await supabase
-      .from('rate_limits')
-      .insert({
-        ip_address: ipAddress,
-        endpoint: RATE_LIMIT_ENDPOINT,
-        minute_window: minuteWindow,
-        request_count: 1
-      });
-    
-    return { allowed: true, remaining: RATE_LIMIT_MAX_REQUESTS - 1 };
-  }
+  return db;
 }
 
 interface RequestBody {
@@ -228,6 +183,32 @@ const INDUSTRY_CONFIG: Record<string, IndustryConfig> = {
       '财务报表做得规规矩矩，但对经营决策有什么支撑？',
     ],
   },
+  manufacturing_warehouse: {
+    name: '制造业仓储',
+    dimensions: ['库存管理', '生产协同', '精益改善', '系统应用', '数据分析', '团队管理'],
+    expertModeName: 'JIT 精益与供应链协同版',
+    expertStrategy: '强调 JIT（准时制）库存管理、看板拉动系统、5S 现场管理、库存周转率优化、生产物料齐套保障。体现精益思维和供应链协同能力。',
+    dataPlaceholders: ['[库存周转率提升至 X 次/年]', '[准时交付率达到 Y%]', '[库存准确率提升至 99.X%]', '[仓储成本率降低 Z%]', '[物料齐套率达到 W%]', '[呆滞品处理周期缩短 X 天]'],
+    roastOpeners: [
+      '你的简历全是"负责仓库管理"，我看不到任何精益思维，这是仓管还是看守大门？',
+      '库存积压了多少？周转率多少？准时交付率多少？你只会堆货吗？',
+      '这简历写得像个搬运工，JIT 在哪里？看板在哪里？5S 在哪里？',
+      '生产线催料你就手忙脚乱？物料齐套管理和安全库存策略呢？',
+    ],
+  },
+  ecommerce_warehouse: {
+    name: '电商仓储',
+    dimensions: ['订单履约', '峰值应对', '库存周转', '自动化运营', '逆向物流', '数据驱动'],
+    expertModeName: '履约时效与智能仓储版',
+    expertStrategy: '强调订单履约时效（24 小时/次日达）、大促峰值应对能力、自动化分拣系统应用、库存周转优化、逆向物流闭环管理。体现电商物流的快速响应和数据驱动能力。',
+    dataPlaceholders: ['[日订单处理量达到 X 万单]', '[发货准确率提升至 99.X%]', '[履约时效缩短至 Y 小时]', '[库存周转率提升至 Z 次/月]', '[大促峰值处理能力提升 W%]', '[退货处理周期缩短至 X 天]'],
+    roastOpeners: [
+      '你的简历看起来像是在菜鸟驿站收快递的，订单履约率和发货时效在哪里？',
+      '双11 大促你能扛住吗？峰值处理能力呢？系统容量规划呢？',
+      '这简历全是"日常管理"，我看不到任何数据驱动，你连订单量都不敢写？',
+      '自动化分拣线用过吗？AGV 调度过吗？还是全靠人肉搬箱子？',
+    ],
+  },
 };
 
 function getConfig(industry: string): IndustryConfig {
@@ -247,26 +228,26 @@ serve(async (req) => {
 
   try {
     // 获取客户端 IP
-    const clientIP = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 
-                     req.headers.get('x-real-ip') || 
+    const clientIP = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+                     req.headers.get('x-real-ip') ||
                      'unknown';
-    
-    // 初始化 Supabase 客户端（使用 service role 访问速率限制表）
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-    
+
     // 检查速率限制（可通过 RATE_LIMIT_ENABLED 环境变量控制）
     if (isRateLimitEnabled()) {
-      const { allowed, remaining } = await checkRateLimit(supabase, clientIP);
-      
+      const database = getDatabase();
+      const { allowed, remaining } = await database.checkRateLimit(
+        clientIP,
+        RATE_LIMIT_ENDPOINT,
+        RATE_LIMIT_MAX_REQUESTS
+      );
+
       if (!allowed) {
-        return new Response(JSON.stringify({ 
-          error: '请求过于频繁，请稍后再试（每分钟最多 10 次）' 
+        return new Response(JSON.stringify({
+          error: '请求过于频繁，请稍后再试（每分钟最多 10 次）'
         }), {
           status: 429,
-          headers: { 
-            ...corsHeaders, 
+          headers: {
+            ...corsHeaders,
             'Content-Type': 'application/json',
             'X-RateLimit-Limit': String(RATE_LIMIT_MAX_REQUESTS),
             'X-RateLimit-Remaining': '0',

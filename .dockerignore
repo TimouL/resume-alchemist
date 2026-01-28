@@ -1,0 +1,51 @@
+# 依赖目录
+node_modules/
+.npm/
+.pnpm-store/
+
+# Git
+.git/
+.gitignore
+
+# 构建产物（将在容器内构建）
+dist/
+build/
+
+# 开发配置
+.env
+.env.*
+!.env.server.example
+.env~
+*.env.bak
+.vscode/
+.idea/
+
+# 本地数据
+data/
+*.db
+*.sqlite
+
+# 日志和缓存
+*.log
+.cache/
+.turbo/
+
+# 测试
+coverage/
+.nyc_output/
+
+# 文档（非必需）
+docs/
+*.md
+!README.md
+
+# Claude 配置
+.claude/
+
+# macOS
+.DS_Store
+
+# 其他
+*.zip
+*.tar.gz
+Thumbs.db

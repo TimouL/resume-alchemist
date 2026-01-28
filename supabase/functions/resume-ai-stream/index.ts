@@ -98,6 +98,20 @@ const INDUSTRY_CONFIG: Record<string, IndustryConfig> = {
     expertStrategy: '强调业财融合、现金流优化、审计合规率、税务风险规避及对经营决策的数据支撑。',
     dataPlaceholders: ['[税务成本节约 X万]', '[月结耗时缩短 Y天]', '[审计一次通过率 100%]', '[资金周转率提升 Z%]'],
   },
+  manufacturing_warehouse: {
+    name: '制造业仓储',
+    dimensions: ['库存管理', '生产协同', '精益改善', '系统应用', '数据分析', '团队管理'],
+    expertModeName: 'JIT 精益与供应链协同版',
+    expertStrategy: '强调 JIT（准时制）库存管理、看板拉动系统、5S 现场管理、库存周转率优化、生产物料齐套保障。体现精益思维和供应链协同能力。',
+    dataPlaceholders: ['[库存周转率提升至 X 次/年]', '[准时交付率达到 Y%]', '[库存准确率提升至 99.X%]', '[仓储成本率降低 Z%]', '[物料齐套率达到 W%]', '[呆滞品处理周期缩短 X 天]'],
+  },
+  ecommerce_warehouse: {
+    name: '电商仓储',
+    dimensions: ['订单履约', '峰值应对', '库存周转', '自动化运营', '逆向物流', '数据驱动'],
+    expertModeName: '履约时效与智能仓储版',
+    expertStrategy: '强调订单履约时效（24 小时/次日达）、大促峰值应对能力、自动化分拣系统应用、库存周转优化、逆向物流闭环管理。体现电商物流的快速响应和数据驱动能力。',
+    dataPlaceholders: ['[日订单处理量达到 X 万单]', '[发货准确率提升至 99.X%]', '[履约时效缩短至 Y 小时]', '[库存周转率提升至 Z 次/月]', '[大促峰值处理能力提升 W%]', '[退货处理周期缩短至 X 天]'],
+  },
 };
 
 function getConfig(industry: string): IndustryConfig {

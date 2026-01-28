@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Code2, Lightbulb, Palette, BarChart3, Megaphone, Handshake, Users, Server, Shield, Bug, Calculator } from 'lucide-react';
+import { Code2, Lightbulb, Palette, BarChart3, Megaphone, Handshake, Users, Server, Shield, Bug, Calculator, Package, Truck } from 'lucide-react';
 import { INDUSTRIES, CATEGORY_LABELS, type IndustryId } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import { GAEvents } from '@/lib/analytics';
@@ -16,6 +16,8 @@ const iconMap = {
   Shield,
   Bug,
   Calculator,
+  Package,
+  Truck,
 };
 
 interface IndustrySelectorProps {

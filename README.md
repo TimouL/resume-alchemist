@@ -114,6 +114,75 @@ npm run dev
 - ✅ 基于 IP 的速率限制（每分钟 10 次）
 - ✅ 模型名称服务器端配置，防止滥用
 
+### 🐳 Docker 部署
+
+#### 快速启动
+
+```bash
+# 拉取镜像
+docker pull ghcr.io/YOUR_USERNAME/resume-alchemist:latest
+
+# 运行容器
+docker run -d \
+  --name resume-alchemist \
+  -p 8000:8000 \
+  -e SILICONFLOW_API_KEY=your-api-key \
+  -e SILICONFLOW_MODEL=Qwen/Qwen3-8B \
+  -v ./data:/app/data \
+  ghcr.io/YOUR_USERNAME/resume-alchemist:latest
+```
+
+#### 使用环境变量文件
+
+```bash
+# 创建配置文件
+cp .env.server.example .env.server
+# 编辑 .env.server 填写配置
+
+# 使用配置文件运行
+docker run -d \
+  --name resume-alchemist \
+  -p 8000:8000 \
+  --env-file .env.server \
+  -v ./data:/app/data \
+  ghcr.io/YOUR_USERNAME/resume-alchemist:latest
+```
+
+#### 环境变量说明
+
+| 变量名 | 必填 | 默认值 | 说明 |
+|--------|------|--------|------|
+| `SILICONFLOW_API_KEY` | 是 | - | 硅基流动 API 密钥 |
+| `SILICONFLOW_MODEL` | 否 | `Qwen/Qwen3-8B` | AI 模型名称 |
+| `DATABASE_TYPE` | 否 | `sqlite` | 数据库类型 |
+| `PORT` | 否 | `8000` | 服务端口 |
+
+#### 数据持久化
+
+SQLite 数据库文件存储在容器内的 `/app/data/` 目录。建议挂载本地目录以持久化数据：
+
+```bash
+-v /path/to/local/data:/app/data
+```
+
+#### 健康检查
+
+容器内置健康检查端点：
+
+```bash
+curl http://localhost:8000/health
+```
+
+#### 本地构建
+
+```bash
+# 构建镜像
+docker build -t resume-alchemist .
+
+# 运行
+docker run -d -p 8000:8000 -e SILICONFLOW_API_KEY=xxx resume-alchemist
+```
+
 ### 📚 自部署教程
 
 详细的自部署教程请查看 **[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)**
@@ -225,6 +294,70 @@ The project uses Supabase Secrets for sensitive configurations:
 - ✅ API keys stored server-side, invisible to frontend
 - ✅ IP-based rate limiting (10 requests per minute)
 - ✅ Model name configured server-side to prevent abuse
+
+### 🐳 Docker Deployment
+
+#### Quick Start
+
+```bash
+# Pull the image
+docker pull ghcr.io/YOUR_USERNAME/resume-alchemist:latest
+
+# Run the container
+docker run -d \
+  --name resume-alchemist \
+  -p 8000:8000 \
+  -e SILICONFLOW_API_KEY=your-api-key \
+  -e SILICONFLOW_MODEL=Qwen/Qwen3-8B \
+  -v ./data:/app/data \
+  ghcr.io/YOUR_USERNAME/resume-alchemist:latest
+```
+
+#### Using Environment File
+
+```bash
+# Create config file
+cp .env.server.example .env.server
+# Edit .env.server with your settings
+
+# Run with config file
+docker run -d \
+  --name resume-alchemist \
+  -p 8000:8000 \
+  --env-file .env.server \
+  -v ./data:/app/data \
+  ghcr.io/YOUR_USERNAME/resume-alchemist:latest
+```
+
+#### Environment Variables
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `SILICONFLOW_API_KEY` | Yes | - | SiliconFlow API key |
+| `SILICONFLOW_MODEL` | No | `Qwen/Qwen3-8B` | AI model name |
+| `DATABASE_TYPE` | No | `sqlite` | Database type |
+| `PORT` | No | `8000` | Server port |
+
+#### Data Persistence
+
+SQLite database is stored in `/app/data/` inside the container. Mount a local directory for persistence:
+
+```bash
+-v /path/to/local/data:/app/data
+```
+
+#### Health Check
+
+```bash
+curl http://localhost:8000/health
+```
+
+#### Build Locally
+
+```bash
+docker build -t resume-alchemist .
+docker run -d -p 8000:8000 -e SILICONFLOW_API_KEY=xxx resume-alchemist
+```
 
 ### 📚 Self-Deployment Guide
 
