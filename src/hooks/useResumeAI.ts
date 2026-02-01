@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, isSelfHosted } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { GAEvents } from '@/lib/analytics';
 
@@ -30,23 +30,41 @@ interface JDMatchResult {
   suggestions: string[];
 }
 
-// 更新使用统计
+// 自托管模式下直接调用本地 API
+async function callSelfHostedAPI(endpoint: string, body: Record<string, unknown>) {
+  const response = await fetch(`/${endpoint}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || `请求失败: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+// 更新使用统计（仅 Supabase 模式）
 async function incrementUsageStats() {
+  if (isSelfHosted || !supabase) return;
+
   try {
     const today = new Date().toISOString().split('T')[0];
-    
+
     // 先尝试获取今天的记录
     const { data: existing } = await supabase
       .from('usage_stats')
       .select('id, polish_count, dau')
       .eq('date', today)
       .single();
-    
+
     if (existing) {
       // 更新现有记录
       await supabase
         .from('usage_stats')
-        .update({ 
+        .update({
           polish_count: (existing.polish_count || 0) + 1,
           dau: (existing.dau || 0) + 1,
           updated_at: new Date().toISOString()
@@ -56,8 +74,8 @@ async function incrementUsageStats() {
       // 创建新记录
       await supabase
         .from('usage_stats')
-        .insert({ 
-          date: today, 
+        .insert({
+          date: today,
           polish_count: 1,
           dau: 1
         });
@@ -73,16 +91,23 @@ export function useResumeAI() {
   const analyzeResume = async (content: string, industry: string): Promise<RoastResult | null> => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('resume-ai', {
-        body: { type: 'roast', content, industry },
-      });
+      let data;
 
-      if (error) throw error;
+      if (isSelfHosted) {
+        data = await callSelfHostedAPI('resume-ai', { type: 'roast', content, industry });
+      } else {
+        const result = await supabase!.functions.invoke('resume-ai', {
+          body: { type: 'roast', content, industry },
+        });
+        if (result.error) throw result.error;
+        data = result.data;
+      }
+
       if (data.error) throw new Error(data.error);
 
       // 统计使用
       incrementUsageStats();
-      
+
       // 追踪分析事件
       GAEvents.resumeAnalyze(industry);
 
@@ -99,11 +124,18 @@ export function useResumeAI() {
   const polishFull = async (content: string, industry: string): Promise<PolishFullResult | null> => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('resume-ai', {
-        body: { type: 'polish_full', content, industry },
-      });
+      let data;
 
-      if (error) throw error;
+      if (isSelfHosted) {
+        data = await callSelfHostedAPI('resume-ai', { type: 'polish_full', content, industry });
+      } else {
+        const result = await supabase!.functions.invoke('resume-ai', {
+          body: { type: 'polish_full', content, industry },
+        });
+        if (result.error) throw result.error;
+        data = result.data;
+      }
+
       if (data.error) throw new Error(data.error);
 
       // 统计使用
@@ -120,17 +152,24 @@ export function useResumeAI() {
   };
 
   const polishSentence = async (
-    content: string, 
-    industry: string, 
+    content: string,
+    industry: string,
     style: 'standard' | 'data' | 'expert'
   ): Promise<PolishSentenceResult | null> => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('resume-ai', {
-        body: { type: 'polish_sentence', content, industry, style },
-      });
+      let data;
 
-      if (error) throw error;
+      if (isSelfHosted) {
+        data = await callSelfHostedAPI('resume-ai', { type: 'polish_sentence', content, industry, style });
+      } else {
+        const result = await supabase!.functions.invoke('resume-ai', {
+          body: { type: 'polish_sentence', content, industry, style },
+        });
+        if (result.error) throw result.error;
+        data = result.data;
+      }
+
       if (data.error) throw new Error(data.error);
 
       // 统计使用
@@ -149,11 +188,18 @@ export function useResumeAI() {
   const matchJD = async (content: string, jd: string, industry: string): Promise<JDMatchResult | null> => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('resume-ai', {
-        body: { type: 'jd_match', content, industry, jd },
-      });
+      let data;
 
-      if (error) throw error;
+      if (isSelfHosted) {
+        data = await callSelfHostedAPI('resume-ai', { type: 'jd_match', content, industry, jd });
+      } else {
+        const result = await supabase!.functions.invoke('resume-ai', {
+          body: { type: 'jd_match', content, industry, jd },
+        });
+        if (result.error) throw result.error;
+        data = result.data;
+      }
+
       if (data.error) throw new Error(data.error);
 
       return data as JDMatchResult;

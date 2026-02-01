@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef } from 'react';
 import { toast } from 'sonner';
+import { isSelfHosted } from '@/integrations/supabase/client';
 
 interface StreamingPolishOptions {
   onChunk?: (text: string) => void;
@@ -7,29 +8,47 @@ interface StreamingPolishOptions {
   onError?: (error: string) => void;
 }
 
+// 获取流式 API 端点
+function getStreamApiUrl(): string {
+  if (isSelfHosted) {
+    return '/resume-ai-stream';
+  }
+  return `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/resume-ai-stream`;
+}
+
+// 获取请求头
+function getStreamHeaders(): Record<string, string> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+
+  if (!isSelfHosted) {
+    headers['Authorization'] = `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`;
+  }
+
+  return headers;
+}
+
 export function useStreamingPolish() {
   const [isStreaming, setIsStreaming] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
 
   const streamPolishFull = useCallback(async (
-    content: string, 
+    content: string,
     industry: string,
     options: StreamingPolishOptions = {}
   ) => {
     setIsStreaming(true);
     abortControllerRef.current = new AbortController();
-    
+
     let fullText = '';
-    
+
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/resume-ai-stream`,
+        getStreamApiUrl(),
         {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
+          headers: getStreamHeaders(),
           body: JSON.stringify({
             type: 'polish_full',
             content,
@@ -129,18 +148,15 @@ export function useStreamingPolish() {
   ) => {
     setIsStreaming(true);
     abortControllerRef.current = new AbortController();
-    
+
     let fullText = '';
-    
+
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/resume-ai-stream`,
+        getStreamApiUrl(),
         {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
+          headers: getStreamHeaders(),
           body: JSON.stringify({
             type: 'polish_sentence',
             content,
