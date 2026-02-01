@@ -42,14 +42,18 @@
 - 👥 人力资源
 - 🧮 会计/财务
 
+**物流仓储**
+- 🏭 制造业仓储
+- 📦 电商仓储
+
 ### 🛠️ 技术栈
 
 - **前端**: React 18 + TypeScript + Vite
 - **样式**: Tailwind CSS + shadcn/ui
 - **动画**: Framer Motion
-- **后端**: Supabase Edge Functions
-- **AI**: 硅基流动 API (SiliconFlow)
-- **数据库**: Supabase PostgreSQL
+- **后端**: Deno HTTP 服务器 / Supabase Edge Functions
+- **AI**: OpenAI 兼容接口（硅基流动、OpenAI、Ollama 等）
+- **数据库**: SQLite（默认）/ Supabase PostgreSQL
 
 ### 🚀 快速开始
 
@@ -92,7 +96,17 @@ npm run dev
 
 ### 🔐 环境变量
 
-项目使用 Supabase Secrets 管理敏感配置：
+#### Docker 自托管部署
+
+| 变量名 | 必填 | 默认值 | 说明 |
+|--------|------|--------|------|
+| `OPENAI_API_KEY` | 是 | - | API 密钥（支持 OpenAI 兼容接口） |
+| `OPENAI_API_BASE` | 否 | 硅基流动 | API 端点 URL |
+| `OPENAI_MODEL` | 否 | `Qwen/Qwen3-8B` | AI 模型名称 |
+| `DATABASE_TYPE` | 否 | `sqlite` | 数据库类型（`sqlite` 或 `supabase`） |
+| `PORT` | 否 | `8000` | 服务端口 |
+
+#### Supabase 托管部署
 
 | 变量名 | 说明 |
 |--------|------|
@@ -126,8 +140,8 @@ docker pull ghcr.io/YOUR_USERNAME/resume-alchemist:latest
 docker run -d \
   --name resume-alchemist \
   -p 8000:8000 \
-  -e SILICONFLOW_API_KEY=your-api-key \
-  -e SILICONFLOW_MODEL=Qwen/Qwen3-8B \
+  -e OPENAI_API_KEY=your-api-key \
+  -e OPENAI_MODEL=Qwen/Qwen3-8B \
   -v ./data:/app/data \
   ghcr.io/YOUR_USERNAME/resume-alchemist:latest
 ```
@@ -187,7 +201,7 @@ curl http://localhost:8000/health
 docker build -t resume-alchemist .
 
 # 运行
-docker run -d -p 8000:8000 -e SILICONFLOW_API_KEY=xxx resume-alchemist
+docker run -d -p 8000:8000 -e OPENAI_API_KEY=xxx resume-alchemist
 ```
 
 ### 📚 自部署教程
@@ -234,14 +248,18 @@ docker run -d -p 8000:8000 -e SILICONFLOW_API_KEY=xxx resume-alchemist
 - 👥 Human Resources
 - 🧮 Accountant/Finance
 
+**Logistics & Warehouse**
+- 🏭 Manufacturing Warehouse
+- 📦 E-commerce Warehouse
+
 ### 🛠️ Tech Stack
 
 - **Frontend**: React 18 + TypeScript + Vite
 - **Styling**: Tailwind CSS + shadcn/ui
 - **Animation**: Framer Motion
-- **Backend**: Supabase Edge Functions
-- **AI**: SiliconFlow API
-- **Database**: Supabase PostgreSQL
+- **Backend**: Deno HTTP Server / Supabase Edge Functions
+- **AI**: OpenAI-compatible API (SiliconFlow, OpenAI, Ollama, etc.)
+- **Database**: SQLite (default) / Supabase PostgreSQL
 
 ### 🚀 Quick Start
 
@@ -280,7 +298,17 @@ npm run dev
 
 ### 🔐 Environment Variables
 
-The project uses Supabase Secrets for sensitive configurations:
+#### Docker Self-hosted Deployment
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `OPENAI_API_KEY` | Yes | - | API key (OpenAI-compatible) |
+| `OPENAI_API_BASE` | No | SiliconFlow | API endpoint URL |
+| `OPENAI_MODEL` | No | `Qwen/Qwen3-8B` | AI model name |
+| `DATABASE_TYPE` | No | `sqlite` | Database type (`sqlite` or `supabase`) |
+| `PORT` | No | `8000` | Server port |
+
+#### Supabase Hosted Deployment
 
 | Variable | Description |
 |----------|-------------|
@@ -314,8 +342,8 @@ docker pull ghcr.io/YOUR_USERNAME/resume-alchemist:latest
 docker run -d \
   --name resume-alchemist \
   -p 8000:8000 \
-  -e SILICONFLOW_API_KEY=your-api-key \
-  -e SILICONFLOW_MODEL=Qwen/Qwen3-8B \
+  -e OPENAI_API_KEY=your-api-key \
+  -e OPENAI_MODEL=Qwen/Qwen3-8B \
   -v ./data:/app/data \
   ghcr.io/YOUR_USERNAME/resume-alchemist:latest
 ```
@@ -370,7 +398,7 @@ curl http://localhost:8000/health
 
 ```bash
 docker build -t resume-alchemist .
-docker run -d -p 8000:8000 -e SILICONFLOW_API_KEY=xxx resume-alchemist
+docker run -d -p 8000:8000 -e OPENAI_API_KEY=xxx resume-alchemist
 ```
 
 ### 📚 Self-Deployment Guide
