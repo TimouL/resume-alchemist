@@ -130,11 +130,32 @@ npm run dev
 
 ### 🐳 Docker 部署
 
-#### 快速启动
+#### 使用 Docker Compose（推荐）
+
+```bash
+# 下载配置文件
+curl -O https://raw.githubusercontent.com/TimouL/resume-alchemist/main/docker-compose.yml
+curl -O https://raw.githubusercontent.com/TimouL/resume-alchemist/main/.env.example
+
+# 创建环境配置
+cp .env.example .env
+# 编辑 .env 填写 OPENAI_API_KEY
+
+# 启动服务
+docker compose up -d
+
+# 查看日志
+docker compose logs -f
+
+# 更新镜像
+docker compose pull && docker compose up -d
+```
+
+#### 快速启动（单命令）
 
 ```bash
 # 拉取镜像
-docker pull ghcr.io/YOUR_USERNAME/resume-alchemist:latest
+docker pull ghcr.io/timoul/resume-alchemist:latest
 
 # 运行容器
 docker run -d \
@@ -143,7 +164,7 @@ docker run -d \
   -e OPENAI_API_KEY=your-api-key \
   -e OPENAI_MODEL=Qwen/Qwen3-8B \
   -v ./data:/app/data \
-  ghcr.io/YOUR_USERNAME/resume-alchemist:latest
+  ghcr.io/timoul/resume-alchemist:latest
 ```
 
 #### 使用环境变量文件
@@ -159,7 +180,7 @@ docker run -d \
   -p 8000:8000 \
   --env-file .env.server \
   -v ./data:/app/data \
-  ghcr.io/YOUR_USERNAME/resume-alchemist:latest
+  ghcr.io/timoul/resume-alchemist:latest
 ```
 
 #### 环境变量说明
@@ -332,11 +353,32 @@ npm run dev
 
 ### 🐳 Docker Deployment
 
-#### Quick Start
+#### Using Docker Compose (Recommended)
+
+```bash
+# Download config files
+curl -O https://raw.githubusercontent.com/TimouL/resume-alchemist/main/docker-compose.yml
+curl -O https://raw.githubusercontent.com/TimouL/resume-alchemist/main/.env.example
+
+# Create environment config
+cp .env.example .env
+# Edit .env and set OPENAI_API_KEY
+
+# Start service
+docker compose up -d
+
+# View logs
+docker compose logs -f
+
+# Update image
+docker compose pull && docker compose up -d
+```
+
+#### Quick Start (Single Command)
 
 ```bash
 # Pull the image
-docker pull ghcr.io/YOUR_USERNAME/resume-alchemist:latest
+docker pull ghcr.io/timoul/resume-alchemist:latest
 
 # Run the container
 docker run -d \
@@ -345,7 +387,7 @@ docker run -d \
   -e OPENAI_API_KEY=your-api-key \
   -e OPENAI_MODEL=Qwen/Qwen3-8B \
   -v ./data:/app/data \
-  ghcr.io/YOUR_USERNAME/resume-alchemist:latest
+  ghcr.io/timoul/resume-alchemist:latest
 ```
 
 #### Using Environment File
@@ -361,7 +403,7 @@ docker run -d \
   -p 8000:8000 \
   --env-file .env.server \
   -v ./data:/app/data \
-  ghcr.io/YOUR_USERNAME/resume-alchemist:latest
+  ghcr.io/timoul/resume-alchemist:latest
 ```
 
 #### Environment Variables

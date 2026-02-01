@@ -26,3 +26,8 @@ dist-ssr
 .claude/
 docs/
 CLAUDE.md
+
+# Environment files
+.env
+.env.local
+.env.server

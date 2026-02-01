@@ -1,0 +1,91 @@
+# Resume Alchemist - Docker Compose 配置
+# 使用方法：
+#   1. 复制 .env.server.example 为 .env 并填写配置
+#   2. docker compose up -d
+#
+# 更新镜像：
+#   docker compose pull && docker compose up -d
+
+services:
+  resume-alchemist:
+    image: ghcr.io/timoul/resume-alchemist:latest
+    container_name: resume-alchemist
+    restart: unless-stopped
+
+    ports:
+      - "${PORT:-8000}:8000"
+
+    environment:
+      # ============================================
+      # AI 服务配置（必填）
+      # ============================================
+      # API 密钥 - 支持 OpenAI 兼容接口
+      - OPENAI_API_KEY=${OPENAI_API_KEY:?请设置 OPENAI_API_KEY}
+
+      # API 端点（可选）
+      # 硅基流动: https://api.siliconflow.cn/v1/chat/completions（默认）
+      # OpenAI:   https://api.openai.com/v1/chat/completions
+      # Ollama:   http://host.docker.internal:11434/v1/chat/completions
+      - OPENAI_API_BASE=${OPENAI_API_BASE:-https://api.siliconflow.cn/v1/chat/completions}
+
+      # AI 模型名称（可选）
+      # 硅基流动: Qwen/Qwen3-8B, deepseek-ai/DeepSeek-V3
+      # OpenAI:   gpt-4o, gpt-4o-mini, gpt-3.5-turbo
+      # Ollama:   llama3.2, qwen2.5, deepseek-r1
+      - OPENAI_MODEL=${OPENAI_MODEL:-Qwen/Qwen3-8B}
+
+      # ============================================
+      # 数据库配置
+      # ============================================
+      # 数据库类型：sqlite（默认）或 supabase
+      - DATABASE_TYPE=${DATABASE_TYPE:-sqlite}
+
+      # SQLite 数据库路径（容器内路径，无需修改）
+      - SQLITE_DB_PATH=/app/data/resume-alchemist.db
+
+      # Supabase 配置（仅 DATABASE_TYPE=supabase 时需要）
+      - SUPABASE_URL=${SUPABASE_URL:-}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY:-}
+
+      # ============================================
+      # 服务器配置
+      # ============================================
+      # 服务器端口（容器内部固定为 8000）
+      - PORT=8000
+
+      # 是否启用速率限制
+      - RATE_LIMIT_ENABLED=${RATE_LIMIT_ENABLED:-false}
+
+    volumes:
+      # 数据持久化 - SQLite 数据库文件
+      - resume-data:/app/data
+
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+    # 可选：使用 Ollama 本地模型时，需要访问宿主机网络
+    # extra_hosts:
+    #   - "host.docker.internal:host-gateway"
+
+    # 可选：限制资源使用
+    # deploy:
+    #   resources:
+    #     limits:
+    #       cpus: '2'
+    #       memory: 1G
+    #     reservations:
+    #       cpus: '0.5'
+    #       memory: 256M
+
+volumes:
+  resume-data:
+    driver: local
+    # 可选：指定本地目录
+    # driver_opts:
+    #   type: none
+    #   o: bind
+    #   device: ./data
