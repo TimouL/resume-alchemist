@@ -29,5 +29,7 @@ CLAUDE.md
 
 # Environment files
 .env
-.env.local
-.env.server
+.env.*
+!.env.example
+!.env.server.example
+.env_backup

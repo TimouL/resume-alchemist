@@ -1,26 +1,29 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Shield, Users, TrendingUp } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, isSelfHosted } from '@/integrations/supabase/client';
 
 export function Footer() {
   const [stats, setStats] = useState({ todayCount: 0, totalCount: 0 });
 
   const fetchStats = async () => {
+    // 自托管模式下不获取统计数据
+    if (isSelfHosted || !supabase) return;
+
     try {
       const { data } = await supabase
         .from('usage_stats')
         .select('polish_count, dau, date')
         .order('date', { ascending: false });
-      
+
       if (data && data.length > 0) {
         const today = new Date().toISOString().split('T')[0];
         const todayData = data.find(d => d.date === today);
-        
+
         // 计算总数
         const totalCount = data.reduce((sum, d) => sum + (d.polish_count || 0), 0);
         const todayCount = todayData?.polish_count || 0;
-        
+
         setStats({ todayCount, totalCount });
       }
     } catch (error) {
@@ -29,9 +32,12 @@ export function Footer() {
   };
 
   useEffect(() => {
+    // 自托管模式下不订阅实时更新
+    if (isSelfHosted || !supabase) return;
+
     // 初始加载
     fetchStats();
-    
+
     // 订阅实时更新
     const channel = supabase
       .channel('usage_stats_realtime')
