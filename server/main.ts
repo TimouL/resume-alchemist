@@ -262,7 +262,7 @@ async function handler(req: Request): Promise<Response> {
   }
 
   // 健康检查
-  if (url.pathname === "/health" || url.pathname === "/") {
+  if (url.pathname === "/health") {
     return new Response(JSON.stringify({
       status: "ok",
       database: Deno.env.get("DATABASE_TYPE") || "sqlite",
@@ -272,11 +272,70 @@ async function handler(req: Request): Promise<Response> {
     });
   }
 
-  // 404
-  return new Response(JSON.stringify({ error: "Not Found" }), {
-    status: 404,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
-  });
+  // 静态文件服务
+  return await serveStaticFile(url.pathname);
+}
+
+// 静态文件服务
+async function serveStaticFile(pathname: string): Promise<Response> {
+  const DIST_DIR = "./dist";
+
+  // 确定文件路径
+  let filePath = pathname === "/" ? "/index.html" : pathname;
+  let fullPath = `${DIST_DIR}${filePath}`;
+
+  try {
+    // 尝试读取文件
+    const file = await Deno.readFile(fullPath);
+    const contentType = getContentType(filePath);
+    return new Response(file, {
+      headers: {
+        "Content-Type": contentType,
+        "Cache-Control": contentType.startsWith("text/html")
+          ? "no-cache"
+          : "public, max-age=31536000",
+      },
+    });
+  } catch {
+    // 文件不存在，对于 SPA 返回 index.html
+    try {
+      const indexFile = await Deno.readFile(`${DIST_DIR}/index.html`);
+      return new Response(indexFile, {
+        headers: {
+          "Content-Type": "text/html; charset=utf-8",
+          "Cache-Control": "no-cache",
+        },
+      });
+    } catch {
+      return new Response(JSON.stringify({ error: "Not Found" }), {
+        status: 404,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+  }
+}
+
+// 根据文件扩展名获取 Content-Type
+function getContentType(filePath: string): string {
+  const ext = filePath.split(".").pop()?.toLowerCase();
+  const mimeTypes: Record<string, string> = {
+    html: "text/html; charset=utf-8",
+    css: "text/css; charset=utf-8",
+    js: "application/javascript; charset=utf-8",
+    json: "application/json; charset=utf-8",
+    png: "image/png",
+    jpg: "image/jpeg",
+    jpeg: "image/jpeg",
+    gif: "image/gif",
+    svg: "image/svg+xml",
+    ico: "image/x-icon",
+    woff: "font/woff",
+    woff2: "font/woff2",
+    ttf: "font/ttf",
+    eot: "application/vnd.ms-fontobject",
+    txt: "text/plain; charset=utf-8",
+  };
+  return mimeTypes[ext || ""] || "application/octet-stream";
 }
 
 // 启动服务器
