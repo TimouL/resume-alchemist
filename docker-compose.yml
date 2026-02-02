@@ -67,10 +67,6 @@ services:
       retries: 3
       start_period: 10s
 
-    # 可选：使用 Ollama 本地模型时，需要访问宿主机网络
-    # extra_hosts:
-    #   - "host.docker.internal:host-gateway"
-
     # 可选：限制资源使用
     # deploy:
     #   resources:
@@ -80,6 +76,10 @@ services:
     #     reservations:
     #       cpus: '0.5'
     #       memory: 256M
+
+    # 访问宿主机网络（用于连接本地 AI 服务如 Ollama）
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
 volumes:
   resume-data:
