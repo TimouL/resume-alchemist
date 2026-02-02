@@ -51,9 +51,9 @@ USER appuser
 # 暴露端口
 EXPOSE 8000
 
-# 健康检查（使用 BusyBox 兼容的 wget 标志）
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD wget -q --spider http://localhost:8000/health || exit 1
+# 健康检查（使用 Deno fetch，无需额外安装 wget）
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+    CMD deno eval "const r = await fetch('http://localhost:8000/health'); if (!r.ok) Deno.exit(1);" || exit 1
 
 # 数据卷
 VOLUME ["/app/data"]

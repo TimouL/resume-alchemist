@@ -61,7 +61,7 @@ services:
       - resume-data:/app/data
 
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8000/health"]
+      test: ["CMD", "deno", "eval", "const r = await fetch('http://localhost:8000/health'); if (!r.ok) Deno.exit(1);"]
       interval: 30s
       timeout: 10s
       retries: 3
