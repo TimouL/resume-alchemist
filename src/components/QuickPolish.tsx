@@ -108,11 +108,16 @@ export function QuickPolish({ industry, onBack }: QuickPolishProps) {
     toast.info('已停止生成');
   };
 
-  const handleCopy = (text: string, style: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedStyle(style);
-    toast.success('已复制到剪贴板');
-    setTimeout(() => setCopiedStyle(null), 2000);
+  const handleCopy = async (text: string, style: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedStyle(style);
+      toast.success('已复制到剪贴板');
+      setTimeout(() => setCopiedStyle(null), 2000);
+    } catch (err) {
+      console.error('复制失败:', err);
+      toast.error('复制失败，请手动选中复制');
+    }
   };
 
   const renderHighlightedText = (text: string) => {
